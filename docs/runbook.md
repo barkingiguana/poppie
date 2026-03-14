@@ -1,14 +1,11 @@
 ---
-title: Runbook
-nav_order: 3
+title: Getting Started
+nav_order: 2
 ---
 
-# Operations Runbook
+# Getting Started
 
-Poppie is a local-first CLI tool — most "operations" are on your own machine.
-This runbook covers distribution, troubleshooting, and future hosted scenarios.
-
-## Installation
+## Install
 
 ### From source
 
@@ -19,7 +16,6 @@ go install github.com/BarkingIguana/poppie/cmd/poppie@latest
 ### From release binary
 
 ```bash
-# Download from GitHub releases
 curl -sL https://github.com/BarkingIguana/poppie/releases/latest/download/poppie-darwin-arm64 -o poppie
 chmod +x poppie
 mv poppie /usr/local/bin/
@@ -31,67 +27,79 @@ mv poppie /usr/local/bin/
 brew install BarkingIguana/tap/poppie
 ```
 
-## Server Management
+## Start the server
 
 ```bash
-# Start the server (foreground)
-poppie server start
-
-# Start as background daemon
+export POPPIE_PASSPHRASE="your-vault-passphrase"
 poppie server start --daemon
-
-# Check server status
-poppie server status
-
-# Stop the server
-poppie server stop
 ```
 
-The server listens on a Unix socket at `~/.config/poppie/poppie.sock` by default.
+The server listens on a Unix socket at `~/.config/poppie/poppie.sock`.
+
+## Store a secret
+
+```bash
+poppie store --label github.com --secret JBSWY3DPEHPK3PXP
+# Stored "github.com" — verification code: 483921
+```
+
+## Get a code
+
+```bash
+poppie get --label github.com
+# 483921 (valid for 18s)
+```
+
+## Watch codes live
+
+```bash
+poppie get --label github.com --label aws.com --live
+```
+
+Displays a continuously updating view with countdown bars. Press Ctrl-C to stop.
+
+## Manage secrets
+
+```bash
+# List all stored labels
+poppie list
+
+# Delete a secret
+poppie delete --label github.com
+```
+
+## Server management
+
+```bash
+poppie server status    # Check if the server is running
+poppie server stop      # Stop the server
+```
 
 ## Troubleshooting
 
 ### Server won't start — "address already in use"
 
-**Symptoms**: `poppie server start` fails with bind error.
-**Cause**: Stale socket file from a crashed server.
-**Fix**:
-1. Check if a server is actually running: `poppie server status`
-2. If not, remove the stale socket: `rm ~/.config/poppie/poppie.sock`
-3. Restart: `poppie server start`
+A stale socket from a crashed server. Check with `poppie server status`, then remove
+the socket if nothing is running:
+
+```bash
+rm ~/.config/poppie/poppie.sock
+poppie server start
+```
 
 ### Codes are wrong / not accepted
 
-**Symptoms**: Generated codes are rejected by the service.
-**Cause**: Clock skew — TOTP requires UTC time accurate to ~30 seconds.
-**Fix**:
-1. Check your system clock: `date -u`
-2. Sync if needed: `sudo sntp -sS time.apple.com` (macOS)
-3. If the secret was stored incorrectly: `poppie delete <key>` and re-store
+TOTP requires UTC time accurate to ~30 seconds. Check your system clock:
 
-### Cannot decrypt vault
+```bash
+date -u
+sudo sntp -sS time.apple.com   # macOS
+```
 
-**Symptoms**: "decryption failed" error on any operation.
-**Cause**: Wrong passphrase or corrupted vault file.
-**Fix**:
-1. Try your passphrase again (check caps lock, keyboard layout)
-2. If the vault is corrupted, restore from backup: `cp ~/.config/poppie/secrets.enc.bak ~/.config/poppie/secrets.enc`
-3. Last resort: delete the vault and re-provision secrets from your authenticator app
-
-## Data Locations
+## Data locations
 
 | File | Purpose |
 |------|---------|
 | `~/.config/poppie/secrets.enc` | Encrypted TOTP secret vault |
-| `~/.config/poppie/secrets.enc.bak` | Automatic vault backup (before writes) |
+| `~/.config/poppie/secrets.enc.bak` | Automatic backup (before each write) |
 | `~/.config/poppie/poppie.sock` | Unix socket for gRPC server |
-| `~/.config/poppie/config.yaml` | Optional configuration overrides |
-
-## Backup
-
-```bash
-# Manual backup
-cp ~/.config/poppie/secrets.enc ~/safe-place/poppie-secrets-$(date +%Y%m%d).enc
-
-# Poppie automatically creates .bak before each vault write
-```

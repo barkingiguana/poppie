@@ -64,4 +64,4 @@ with PoppieClient() as client:
     print(f"{code} (valid for {valid_for}s)")
 ```
 
-See the [integration guide]({% link integration-dm.md %}) for more options, or jump straight to the [Go SDK]({% link sdk/go.md %}) or [Python SDK]({% link sdk/python.md %}).
+See the [integration guide]({% link integration.md %}) for more options, or jump straight to the [Go SDK]({% link sdk/go.md %}) or [Python SDK]({% link sdk/python.md %}).

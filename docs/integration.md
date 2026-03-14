@@ -1,6 +1,7 @@
 ---
 title: Integration Guide
 nav_order: 4
+permalink: /integration/
 ---
 
 # Integrating poppie with your application

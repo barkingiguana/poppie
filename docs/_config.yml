@@ -18,8 +18,7 @@ footer_content: "Poppie &mdash; a BarkingIguana project"
 
 color_scheme: dark
 
-exclude:
-  - adr/000-template.md
+exclude: []
 
 defaults:
   - scope:
