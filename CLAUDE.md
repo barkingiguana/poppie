@@ -67,15 +67,16 @@ make run           # Run poppie server locally
 
 ## What's Built
 
-- Nothing yet — project setup and planning phase
+- Protobuf service definition with all RPC methods and messages
+- RFC 6238 TOTP engine (SHA1/SHA256/SHA512, configurable digits/period)
+- Encrypted vault storage (AES-256-GCM, argon2id KDF, atomic writes, auto-backup)
+- gRPC server with Unix socket binding
+- CLI commands: store, get, list, delete, server start/stop/status
+- BDD feature specs (10 scenarios, 42 steps) covering all operations
+- Unit tests for TOTP engine (RFC 6238 vectors) and store
 
 ## What's In Progress / Left To Do
 
-- Define protobuf service and messages
-- Implement TOTP secret storage (encrypted)
-- Implement TOTP code generation
-- Build gRPC server
-- Build CLI (store, get, list, delete, server start/stop)
 - Integration with delivery-machine's `dm` command
 - CI/CD pipeline
 - Homebrew formula for distribution
