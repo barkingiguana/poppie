@@ -1,0 +1,109 @@
+syntax = "proto3";
+
+package poppie;
+
+option go_package = "github.com/BarkingIguana/poppie/proto/poppie";
+
+import "google/protobuf/timestamp.proto";
+
+// PoppieService provides TOTP secret management and code generation.
+service PoppieService {
+  // StoreSecret stores a new TOTP secret in the vault.
+  rpc StoreSecret(StoreSecretRequest) returns (StoreSecretResponse);
+
+  // GetCode generates a current TOTP code for a stored secret.
+  rpc GetCode(GetCodeRequest) returns (GetCodeResponse);
+
+  // ListSecrets returns the labels of all stored secrets.
+  rpc ListSecrets(ListSecretsRequest) returns (ListSecretsResponse);
+
+  // DeleteSecret removes a secret from the vault.
+  rpc DeleteSecret(DeleteSecretRequest) returns (DeleteSecretResponse);
+}
+
+// Algorithm specifies the HMAC algorithm used for TOTP generation.
+enum Algorithm {
+  // ALGORITHM_UNSPECIFIED defaults to SHA1.
+  ALGORITHM_UNSPECIFIED = 0;
+  // ALGORITHM_SHA1 is the most common TOTP algorithm (RFC 6238 default).
+  ALGORITHM_SHA1 = 1;
+  // ALGORITHM_SHA256 uses SHA-256 for HMAC.
+  ALGORITHM_SHA256 = 2;
+  // ALGORITHM_SHA512 uses SHA-512 for HMAC.
+  ALGORITHM_SHA512 = 3;
+}
+
+// Secret represents a stored TOTP secret.
+message Secret {
+  // label is the human-readable identifier for this secret (e.g. "github.com").
+  string label = 1;
+  // secret is the base32-encoded TOTP secret key.
+  string secret = 2;
+  // algorithm is the HMAC algorithm to use.
+  Algorithm algorithm = 3;
+  // digits is the number of digits in the generated code (typically 6 or 8).
+  uint32 digits = 4;
+  // period is the time step in seconds (typically 30).
+  uint32 period = 5;
+  // created_at is when the secret was first stored.
+  google.protobuf.Timestamp created_at = 6;
+  // last_used_at is when a code was last generated for this secret.
+  google.protobuf.Timestamp last_used_at = 7;
+}
+
+// StoreSecretRequest contains the details of a TOTP secret to store.
+message StoreSecretRequest {
+  // label is the human-readable identifier (e.g. "github.com").
+  string label = 1;
+  // secret is the base32-encoded TOTP secret key.
+  string secret = 2;
+  // algorithm is the HMAC algorithm (defaults to SHA1 if unspecified).
+  Algorithm algorithm = 3;
+  // digits is the code length (defaults to 6 if 0).
+  uint32 digits = 4;
+  // period is the time step in seconds (defaults to 30 if 0).
+  uint32 period = 5;
+}
+
+// StoreSecretResponse confirms storage and includes a verification code.
+message StoreSecretResponse {
+  // label echoes the stored secret's label.
+  string label = 1;
+  // verification_code is a current TOTP code to verify the secret works.
+  string verification_code = 2;
+}
+
+// GetCodeRequest identifies which secret to generate a code for.
+message GetCodeRequest {
+  // label is the identifier of the secret.
+  string label = 1;
+}
+
+// GetCodeResponse contains the generated TOTP code.
+message GetCodeResponse {
+  // code is the current TOTP code.
+  string code = 1;
+  // valid_for_seconds is how many seconds until this code expires.
+  uint32 valid_for_seconds = 2;
+}
+
+// ListSecretsRequest has no parameters.
+message ListSecretsRequest {}
+
+// ListSecretsResponse contains all stored secret labels.
+message ListSecretsResponse {
+  // labels is the list of stored secret identifiers.
+  repeated string labels = 1;
+}
+
+// DeleteSecretRequest identifies the secret to remove.
+message DeleteSecretRequest {
+  // label is the identifier of the secret to delete.
+  string label = 1;
+}
+
+// DeleteSecretResponse confirms deletion.
+message DeleteSecretResponse {
+  // deleted indicates whether a secret was actually removed.
+  bool deleted = 1;
+}
