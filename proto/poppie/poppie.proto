@@ -107,3 +107,9 @@ message DeleteSecretResponse {
   // deleted indicates whether a secret was actually removed.
   bool deleted = 1;
 }
+
+// VaultContents is the internal format stored encrypted on disk.
+message VaultContents {
+  // secrets is the list of all stored TOTP secrets.
+  repeated Secret secrets = 1;
+}

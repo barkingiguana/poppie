@@ -592,6 +592,52 @@ func (x *DeleteSecretResponse) GetDeleted() bool {
 	return false
 }
 
+// VaultContents is the internal format stored encrypted on disk.
+type VaultContents struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// secrets is the list of all stored TOTP secrets.
+	Secrets       []*Secret `protobuf:"bytes,1,rep,name=secrets,proto3" json:"secrets,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VaultContents) Reset() {
+	*x = VaultContents{}
+	mi := &file_proto_poppie_poppie_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VaultContents) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VaultContents) ProtoMessage() {}
+
+func (x *VaultContents) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_poppie_poppie_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VaultContents.ProtoReflect.Descriptor instead.
+func (*VaultContents) Descriptor() ([]byte, []int) {
+	return file_proto_poppie_poppie_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *VaultContents) GetSecrets() []*Secret {
+	if x != nil {
+		return x.Secrets
+	}
+	return nil
+}
+
 var File_proto_poppie_poppie_proto protoreflect.FileDescriptor
 
 const file_proto_poppie_poppie_proto_rawDesc = "" +
@@ -627,7 +673,9 @@ const file_proto_poppie_poppie_proto_rawDesc = "" +
 	"\x13DeleteSecretRequest\x12\x14\n" +
 	"\x05label\x18\x01 \x01(\tR\x05label\"0\n" +
 	"\x14DeleteSecretResponse\x12\x18\n" +
-	"\adeleted\x18\x01 \x01(\bR\adeleted*f\n" +
+	"\adeleted\x18\x01 \x01(\bR\adeleted\"9\n" +
+	"\rVaultContents\x12(\n" +
+	"\asecrets\x18\x01 \x03(\v2\x0e.poppie.SecretR\asecrets*f\n" +
 	"\tAlgorithm\x12\x19\n" +
 	"\x15ALGORITHM_UNSPECIFIED\x10\x00\x12\x12\n" +
 	"\x0eALGORITHM_SHA1\x10\x01\x12\x14\n" +
@@ -652,7 +700,7 @@ func file_proto_poppie_poppie_proto_rawDescGZIP() []byte {
 }
 
 var file_proto_poppie_poppie_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_proto_poppie_poppie_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_proto_poppie_poppie_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_proto_poppie_poppie_proto_goTypes = []any{
 	(Algorithm)(0),                // 0: poppie.Algorithm
 	(*Secret)(nil),                // 1: poppie.Secret
@@ -664,26 +712,28 @@ var file_proto_poppie_poppie_proto_goTypes = []any{
 	(*ListSecretsResponse)(nil),   // 7: poppie.ListSecretsResponse
 	(*DeleteSecretRequest)(nil),   // 8: poppie.DeleteSecretRequest
 	(*DeleteSecretResponse)(nil),  // 9: poppie.DeleteSecretResponse
-	(*timestamppb.Timestamp)(nil), // 10: google.protobuf.Timestamp
+	(*VaultContents)(nil),         // 10: poppie.VaultContents
+	(*timestamppb.Timestamp)(nil), // 11: google.protobuf.Timestamp
 }
 var file_proto_poppie_poppie_proto_depIdxs = []int32{
 	0,  // 0: poppie.Secret.algorithm:type_name -> poppie.Algorithm
-	10, // 1: poppie.Secret.created_at:type_name -> google.protobuf.Timestamp
-	10, // 2: poppie.Secret.last_used_at:type_name -> google.protobuf.Timestamp
+	11, // 1: poppie.Secret.created_at:type_name -> google.protobuf.Timestamp
+	11, // 2: poppie.Secret.last_used_at:type_name -> google.protobuf.Timestamp
 	0,  // 3: poppie.StoreSecretRequest.algorithm:type_name -> poppie.Algorithm
-	2,  // 4: poppie.PoppieService.StoreSecret:input_type -> poppie.StoreSecretRequest
-	4,  // 5: poppie.PoppieService.GetCode:input_type -> poppie.GetCodeRequest
-	6,  // 6: poppie.PoppieService.ListSecrets:input_type -> poppie.ListSecretsRequest
-	8,  // 7: poppie.PoppieService.DeleteSecret:input_type -> poppie.DeleteSecretRequest
-	3,  // 8: poppie.PoppieService.StoreSecret:output_type -> poppie.StoreSecretResponse
-	5,  // 9: poppie.PoppieService.GetCode:output_type -> poppie.GetCodeResponse
-	7,  // 10: poppie.PoppieService.ListSecrets:output_type -> poppie.ListSecretsResponse
-	9,  // 11: poppie.PoppieService.DeleteSecret:output_type -> poppie.DeleteSecretResponse
-	8,  // [8:12] is the sub-list for method output_type
-	4,  // [4:8] is the sub-list for method input_type
-	4,  // [4:4] is the sub-list for extension type_name
-	4,  // [4:4] is the sub-list for extension extendee
-	0,  // [0:4] is the sub-list for field type_name
+	1,  // 4: poppie.VaultContents.secrets:type_name -> poppie.Secret
+	2,  // 5: poppie.PoppieService.StoreSecret:input_type -> poppie.StoreSecretRequest
+	4,  // 6: poppie.PoppieService.GetCode:input_type -> poppie.GetCodeRequest
+	6,  // 7: poppie.PoppieService.ListSecrets:input_type -> poppie.ListSecretsRequest
+	8,  // 8: poppie.PoppieService.DeleteSecret:input_type -> poppie.DeleteSecretRequest
+	3,  // 9: poppie.PoppieService.StoreSecret:output_type -> poppie.StoreSecretResponse
+	5,  // 10: poppie.PoppieService.GetCode:output_type -> poppie.GetCodeResponse
+	7,  // 11: poppie.PoppieService.ListSecrets:output_type -> poppie.ListSecretsResponse
+	9,  // 12: poppie.PoppieService.DeleteSecret:output_type -> poppie.DeleteSecretResponse
+	9,  // [9:13] is the sub-list for method output_type
+	5,  // [5:9] is the sub-list for method input_type
+	5,  // [5:5] is the sub-list for extension type_name
+	5,  // [5:5] is the sub-list for extension extendee
+	0,  // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_proto_poppie_poppie_proto_init() }
@@ -697,7 +747,7 @@ func file_proto_poppie_poppie_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_poppie_poppie_proto_rawDesc), len(file_proto_poppie_poppie_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   9,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
