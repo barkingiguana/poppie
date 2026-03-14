@@ -90,7 +90,7 @@ func (s *Server) Start() error {
 		return fmt.Errorf("failed to listen on %s: %w", s.config.SocketPath, err)
 	}
 
-	s.grpc = grpc.NewServer()
+	s.grpc = grpc.NewServer(grpc.UnaryInterceptor(VersionInterceptor(s.logger)))
 	pb.RegisterPoppieServiceServer(s.grpc, s)
 
 	s.logger.Info("server starting", "socket", s.config.SocketPath)

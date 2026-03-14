@@ -29,6 +29,7 @@ poppie get --label deliverymachine.net
 - **gRPC server** — sub-millisecond code retrieval for tool integrations
 - **Encrypted storage** — AES-256-GCM with argon2id key derivation
 - **Protobuf API** — type-safe, versioned, language-agnostic integration
+- **Official SDKs** — [Go]({% link sdk/go.md %}) and [Python]({% link sdk/python.md %}) clients with version negotiation
 - **Zero-config start** — sensible defaults, configure only what you need
 
 ## Quick start
@@ -60,4 +61,4 @@ dm signup user@example.com  # → provisions TOTP → stores in poppie
 dm users verify user@example.com  # → asks poppie for code → submits it
 ```
 
-See the [integration guide]({% link integration-dm.md %}) for Python examples.
+See the [integration guide]({% link integration-dm.md %}) for examples, or use the [Python SDK]({% link sdk/python.md %}) directly.

@@ -15,6 +15,12 @@ coverage.out
 .DS_Store
 Thumbs.db
 
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+
 # Poppie runtime (never commit secrets)
 *.enc
 *.sock

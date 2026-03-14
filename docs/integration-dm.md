@@ -135,12 +135,30 @@ poppie server start --daemon
 poppie server status
 ```
 
+## Option C: Python SDK (recommended)
+
+The official Python SDK wraps the gRPC API with a clean interface and version negotiation.
+
+```bash
+pip install poppie-sdk
+```
+
+```python
+from poppie import PoppieClient
+
+with PoppieClient() as client:
+    label, verification = client.store_secret("delivery-machine", secret)
+    code, valid_for = client.get_code("delivery-machine")
+```
+
+See the [Python SDK docs]({% link sdk/python.md %}) for full API reference.
+
 ## Recommended integration path
 
-1. Start with **Option A** (subprocess) — it's simpler and good enough
-2. Add a `poppie` availability check in `dm`'s startup
-3. Fall back to manual code entry if poppie isn't running
-4. Switch to **Option B** (gRPC) only if subprocess latency becomes a problem
+1. Start with **Option C** (Python SDK) — clean API, version negotiation built in
+2. Fall back to **Option A** (subprocess) if you want zero Python dependencies
+3. Add a poppie availability check in `dm`'s startup
+4. Fall back to manual code entry if poppie isn't running
 
 ## Error handling
 
