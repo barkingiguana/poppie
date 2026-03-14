@@ -230,3 +230,60 @@ func TestStore_CreatesBackup(t *testing.T) {
 		t.Errorf("expected backup file at %s: %v", bakPath, err)
 	}
 }
+
+func TestOpen_CorruptVaultFile_ReturnsError(t *testing.T) {
+	ctx := context.Background()
+	path := tempVaultPath(t)
+
+	// Write a file that's too short to contain a valid salt.
+	if err := os.WriteFile(path, []byte("short"), 0600); err != nil {
+		t.Fatalf("WriteFile: %v", err)
+	}
+
+	_, err := Open(ctx, path, "pass")
+	if err == nil {
+		t.Fatal("expected error for corrupt vault file")
+	}
+}
+
+func TestOpen_GarbageAfterSalt_ReturnsError(t *testing.T) {
+	ctx := context.Background()
+	path := tempVaultPath(t)
+
+	// Write a file with a valid-length salt but garbage ciphertext.
+	data := make([]byte, saltLen+50)
+	for i := range data {
+		data[i] = byte(i)
+	}
+	if err := os.WriteFile(path, data, 0600); err != nil {
+		t.Fatalf("WriteFile: %v", err)
+	}
+
+	_, err := Open(ctx, path, "pass")
+	if err == nil {
+		t.Fatal("expected error for garbage ciphertext")
+	}
+}
+
+func TestGet_UpdatesLastUsedAt(t *testing.T) {
+	ctx := context.Background()
+	s, err := Open(ctx, tempVaultPath(t), "pass")
+	if err != nil {
+		t.Fatalf("Open: %v", err)
+	}
+
+	if err := s.Store(ctx, &pb.Secret{Label: "ts-test", Secret: "JBSWY3DPEHPK3PXP"}); err != nil {
+		t.Fatalf("Store: %v", err)
+	}
+
+	sec, err := s.Get(ctx, "ts-test")
+	if err != nil {
+		t.Fatalf("Get: %v", err)
+	}
+	if sec.LastUsedAt == nil {
+		t.Error("expected last_used_at to be set")
+	}
+	if sec.CreatedAt == nil {
+		t.Error("expected created_at to be set")
+	}
+}

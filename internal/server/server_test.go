@@ -208,3 +208,56 @@ func TestDeleteSecret_EmptyLabel_ReturnsError(t *testing.T) {
 		t.Fatal("expected error for empty label")
 	}
 }
+
+func TestStoreSecret_SHA256_StoresAndReturnsCode(t *testing.T) {
+	srv := testServer(t)
+	resp, err := srv.StoreSecret(context.Background(), &pb.StoreSecretRequest{
+		Label:     "sha256.example",
+		Secret:    "JBSWY3DPEHPK3PXP",
+		Algorithm: pb.Algorithm_ALGORITHM_SHA256,
+		Digits:    8,
+		Period:    60,
+	})
+	if err != nil {
+		t.Fatalf("StoreSecret: %v", err)
+	}
+	if len(resp.VerificationCode) != 8 {
+		t.Errorf("expected 8-digit code, got %q", resp.VerificationCode)
+	}
+}
+
+func TestStoreSecret_SHA512_StoresAndReturnsCode(t *testing.T) {
+	srv := testServer(t)
+	resp, err := srv.StoreSecret(context.Background(), &pb.StoreSecretRequest{
+		Label:     "sha512.example",
+		Secret:    "JBSWY3DPEHPK3PXP",
+		Algorithm: pb.Algorithm_ALGORITHM_SHA512,
+	})
+	if err != nil {
+		t.Fatalf("StoreSecret: %v", err)
+	}
+	if len(resp.VerificationCode) != 6 {
+		t.Errorf("expected 6-digit code, got %q", resp.VerificationCode)
+	}
+}
+
+func TestStoreSecret_DuplicateLabel_ReturnsError(t *testing.T) {
+	srv := testServer(t)
+	ctx := context.Background()
+
+	_, err := srv.StoreSecret(ctx, &pb.StoreSecretRequest{
+		Label:  "dup",
+		Secret: "JBSWY3DPEHPK3PXP",
+	})
+	if err != nil {
+		t.Fatalf("first StoreSecret: %v", err)
+	}
+
+	_, err = srv.StoreSecret(ctx, &pb.StoreSecretRequest{
+		Label:  "dup",
+		Secret: "JBSWY3DPEHPK3PXP",
+	})
+	if err == nil {
+		t.Fatal("expected error for duplicate label")
+	}
+}

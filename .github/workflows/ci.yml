@@ -33,11 +33,11 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
-      - name: Run unit tests
-        run: make test
       - name: Run tests with coverage
         run: |
-          go test -race -coverprofile=coverage.out -covermode=atomic $(go list ./... | grep -v /features/)
+          go test -race -coverprofile=coverage.out -covermode=atomic \
+            -coverpkg=./internal/... \
+            ./internal/... ./features/steps/
       - name: Check coverage
         run: |
           COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')

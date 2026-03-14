@@ -232,3 +232,27 @@ func TestGenerateCode_SHA512_ProducesCode(t *testing.T) {
 		t.Errorf("expected 6 digit code, got %d digits", len(code))
 	}
 }
+
+func TestValidForSeconds_ZeroPeriod_DefaultsTo30(t *testing.T) {
+	gen := NewGenerator(fixedClock{t: time.Unix(45, 0).UTC()})
+	remaining := gen.ValidForSeconds(0)
+	if remaining != 15 {
+		t.Errorf("expected 15 seconds remaining with default period, got %d", remaining)
+	}
+}
+
+func TestValidate_InvalidSecret_ReturnsError(t *testing.T) {
+	gen := NewGenerator(fixedClock{t: time.Unix(59, 0).UTC()})
+	_, err := gen.Validate(Params{Secret: "!!!bad!!!"}, "000000")
+	if err == nil {
+		t.Fatal("expected error for invalid secret in Validate")
+	}
+}
+
+func TestSystemClock_ReturnsUTC(t *testing.T) {
+	clock := SystemClock{}
+	now := clock.Now()
+	if now.Location() != time.UTC {
+		t.Errorf("SystemClock should return UTC, got %v", now.Location())
+	}
+}
