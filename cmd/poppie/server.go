@@ -43,10 +43,16 @@ var serverStatusCmd = &cobra.Command{
 	RunE:  runServerStatus,
 }
 
-var serverPassphrase string
+var (
+	serverPassphrase string
+	serverVaultPath  string
+	serverEphemeral  bool
+)
 
 func init() {
 	serverStartCmd.Flags().StringVar(&serverPassphrase, "passphrase", "", "vault encryption passphrase (or set POPPIE_PASSPHRASE)")
+	serverStartCmd.Flags().StringVar(&serverVaultPath, "vault", "", "path to vault file (default: ~/.config/poppie/secrets.enc)")
+	serverStartCmd.Flags().BoolVar(&serverEphemeral, "ephemeral", false, "use an in-memory vault (no persistence, no passphrase required)")
 
 	serverCmd.AddCommand(serverStartCmd)
 	serverCmd.AddCommand(serverStopCmd)
@@ -55,16 +61,23 @@ func init() {
 }
 
 func runServerStart(_ *cobra.Command, _ []string) error {
-	passphrase := serverPassphrase
-	if passphrase == "" {
-		passphrase = os.Getenv("POPPIE_PASSPHRASE")
-	}
-	if passphrase == "" {
-		return fmt.Errorf("passphrase required: use --passphrase or set POPPIE_PASSPHRASE")
+	cfg := server.DefaultConfig()
+	cfg.Ephemeral = serverEphemeral
+
+	if serverVaultPath != "" {
+		cfg.VaultPath = serverVaultPath
 	}
 
-	cfg := server.DefaultConfig()
-	cfg.Passphrase = passphrase
+	if !cfg.Ephemeral {
+		passphrase := serverPassphrase
+		if passphrase == "" {
+			passphrase = os.Getenv("POPPIE_PASSPHRASE")
+		}
+		if passphrase == "" {
+			return fmt.Errorf("passphrase required: use --passphrase or set POPPIE_PASSPHRASE (or use --ephemeral)")
+		}
+		cfg.Passphrase = passphrase
+	}
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
 

@@ -27,6 +27,8 @@ type Config struct {
 	VaultPath string
 	// Passphrase is the vault encryption passphrase.
 	Passphrase string
+	// Ephemeral uses an in-memory vault that is lost when the server stops.
+	Ephemeral bool
 }
 
 // DefaultConfig returns a Config with standard paths under ~/.config/poppie.
@@ -51,9 +53,16 @@ type Server struct {
 
 // New creates a new Server with the given configuration.
 func New(ctx context.Context, cfg Config, logger *slog.Logger) (*Server, error) {
-	st, err := store.Open(ctx, cfg.VaultPath, cfg.Passphrase)
-	if err != nil {
-		return nil, fmt.Errorf("failed to open vault: %w", err)
+	var st *store.Store
+	if cfg.Ephemeral {
+		st = store.OpenMemory()
+		logger.Info("using ephemeral in-memory vault")
+	} else {
+		var err error
+		st, err = store.Open(ctx, cfg.VaultPath, cfg.Passphrase)
+		if err != nil {
+			return nil, fmt.Errorf("failed to open vault: %w", err)
+		}
 	}
 
 	return &Server{

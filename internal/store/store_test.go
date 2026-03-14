@@ -16,6 +16,57 @@ func tempVaultPath(t *testing.T) string {
 	return filepath.Join(t.TempDir(), "secrets.enc")
 }
 
+func TestOpenMemory_ReturnsEmptyStore(t *testing.T) {
+	s := OpenMemory()
+	labels := s.List(context.Background())
+	if len(labels) != 0 {
+		t.Errorf("expected empty store, got %d secrets", len(labels))
+	}
+}
+
+func TestOpenMemory_StoreAndGet_WorksWithoutDisk(t *testing.T) {
+	ctx := context.Background()
+	s := OpenMemory()
+
+	secret := &pb.Secret{
+		Label:  "memory-test",
+		Secret: "JBSWY3DPEHPK3PXP",
+		Digits: 6,
+		Period: 30,
+	}
+	if err := s.Store(ctx, secret); err != nil {
+		t.Fatalf("Store: %v", err)
+	}
+
+	got, err := s.Get(ctx, "memory-test")
+	if err != nil {
+		t.Fatalf("Get: %v", err)
+	}
+	if got.Secret != "JBSWY3DPEHPK3PXP" {
+		t.Errorf("secret mismatch: got %s", got.Secret)
+	}
+}
+
+func TestOpenMemory_Delete_Works(t *testing.T) {
+	ctx := context.Background()
+	s := OpenMemory()
+
+	if err := s.Store(ctx, &pb.Secret{Label: "del", Secret: "JBSWY3DPEHPK3PXP"}); err != nil {
+		t.Fatalf("Store: %v", err)
+	}
+
+	deleted, err := s.Delete(ctx, "del")
+	if err != nil {
+		t.Fatalf("Delete: %v", err)
+	}
+	if !deleted {
+		t.Error("expected deleted=true")
+	}
+	if len(s.List(ctx)) != 0 {
+		t.Error("expected empty store after delete")
+	}
+}
+
 func TestOpen_NewVault_CreatesEmptyStore(t *testing.T) {
 	s, err := Open(context.Background(), tempVaultPath(t), "test-passphrase")
 	if err != nil {

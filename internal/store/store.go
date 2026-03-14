@@ -44,6 +44,14 @@ type Store struct {
 	secrets map[string]*pb.Secret
 }
 
+// OpenMemory creates an in-memory store that never touches disk.
+// Useful for testing and ephemeral sessions. No passphrase is required.
+func OpenMemory() *Store {
+	return &Store{
+		secrets: make(map[string]*pb.Secret),
+	}
+}
+
 // Open creates or opens a vault at the given path, deriving an encryption key
 // from the passphrase. If the file does not exist, an empty vault is created.
 func Open(_ context.Context, path string, passphrase string) (*Store, error) {
@@ -157,6 +165,10 @@ func (s *Store) List(_ context.Context) []string {
 }
 
 func (s *Store) persist() error {
+	if s.path == "" {
+		return nil // in-memory store, nothing to persist
+	}
+
 	vault := &pb.VaultContents{
 		Secrets: make([]*pb.Secret, 0, len(s.secrets)),
 	}
