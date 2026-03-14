@@ -1,3 +1,9 @@
+---
+title: "002: Go + gRPC"
+parent: ADRs
+nav_order: 2
+---
+
 # ADR-002: Go + gRPC for CLI and Server
 
 ## Status

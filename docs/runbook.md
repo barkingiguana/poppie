@@ -1,3 +1,8 @@
+---
+title: Runbook
+nav_order: 3
+---
+
 # Operations Runbook
 
 Poppie is a local-first CLI tool — most "operations" are on your own machine.

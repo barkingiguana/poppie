@@ -1,3 +1,9 @@
+---
+title: "003: BDD with Cucumber"
+parent: ADRs
+nav_order: 3
+---
+
 # ADR-003: BDD with Cucumber (godog) Drives Development
 
 ## Status

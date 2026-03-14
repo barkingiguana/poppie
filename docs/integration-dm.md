@@ -1,3 +1,8 @@
+---
+title: dm Integration
+nav_order: 4
+---
+
 # Integrating poppie with delivery-machine's `dm`
 
 This guide shows how to connect `dm` (Python CLI) to poppie for automated TOTP

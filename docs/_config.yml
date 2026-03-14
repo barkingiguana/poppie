@@ -1,0 +1,28 @@
+title: Poppie
+description: A CLI-based TOTP manager with a fast gRPC server
+remote_theme: just-the-docs/just-the-docs@v0.10.1
+
+url: https://barkingiguana.github.io
+baseurl: /poppie
+
+permalink: pretty
+
+aux_links:
+  "GitHub":
+    - "https://github.com/BarkingIguana/poppie"
+
+nav_enabled: true
+heading_anchors: true
+
+footer_content: "Poppie &mdash; a BarkingIguana project"
+
+color_scheme: dark
+
+exclude:
+  - adr/000-template.md
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default

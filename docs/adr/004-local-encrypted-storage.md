@@ -1,3 +1,9 @@
+---
+title: "004: Encrypted Local Storage"
+parent: ADRs
+nav_order: 4
+---
+
 # ADR-004: Encrypted Local File Storage for TOTP Secrets
 
 ## Status

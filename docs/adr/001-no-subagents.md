@@ -1,3 +1,9 @@
+---
+title: "001: No Custom Subagents"
+parent: ADRs
+nav_order: 1
+---
+
 # ADR-001: Use CLAUDE.md + AGENTS.md Instead of Custom Subagents/Skills
 
 ## Status

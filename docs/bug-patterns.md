@@ -1,3 +1,8 @@
+---
+title: Bug Patterns
+nav_order: 5
+---
+
 # Common Bug Patterns
 
 ## Go
