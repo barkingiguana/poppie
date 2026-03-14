@@ -1,17 +1,17 @@
 ---
-title: dm Integration
+title: Integration Guide
 nav_order: 4
 ---
 
-# Integrating poppie with delivery-machine's `dm`
+# Integrating poppie with your application
 
-This guide shows how to connect `dm` (Python CLI) to poppie for automated TOTP
-code retrieval, replacing manual copy-paste from an authenticator app.
+This guide shows how to connect your CLI tool or web app to poppie for automated
+TOTP code retrieval, replacing manual copy-paste from an authenticator app.
 
 ## Overview
 
 ```
-dm signup / dm users verify
+your-app signup / your-app verify
         │
         ├─ stores TOTP secret ──► poppie store --label <domain> --secret <base32>
         │
@@ -20,9 +20,42 @@ dm signup / dm users verify
                                       └─ returns 6-digit code to stdout
 ```
 
-## Option A: Shell out to the poppie CLI
+## Option A: Python SDK (recommended)
 
-The simplest integration. `dm` calls the `poppie` binary as a subprocess.
+The official Python SDK wraps the gRPC API with a clean interface and version negotiation.
+
+```bash
+pip install poppie-sdk
+```
+
+```python
+from poppie import PoppieClient
+
+with PoppieClient() as client:
+    # Store a secret during onboarding
+    label, verification = client.store_secret("myapp.example.com", secret)
+
+    # Later, retrieve a fresh code
+    code, valid_for = client.get_code("myapp.example.com")
+```
+
+See the [Python SDK docs]({% link sdk/python.md %}) for full API reference.
+
+### Usage in your app
+
+```python
+# During signup, after receiving the TOTP provisioning URI:
+secret = parse_totp_uri(provisioning_uri)  # extract base32 secret
+client.store_secret("myapp.example.com", secret)
+
+# Later, when you need to verify:
+code, _ = client.get_code("myapp.example.com")
+response = api.post("/auth/totp/verify", json={"code": code})
+```
+
+## Option B: Shell out to the poppie CLI
+
+The simplest integration. Your app calls the `poppie` binary as a subprocess.
 
 ### Python example
 
@@ -36,7 +69,7 @@ def store_totp_secret(label: str, secret: str) -> str:
         ["poppie", "store", "--label", label, "--secret", secret],
         capture_output=True, text=True, check=True,
     )
-    # Output: Stored "github.com" — verification code: 123456
+    # Output: Stored "myapp.example.com" — verification code: 123456
     return result.stdout.strip().split(": ")[-1]
 
 
@@ -50,81 +83,37 @@ def get_totp_code(label: str) -> str:
     return result.stdout.strip().split(" ")[0]
 ```
 
-### Usage in dm
-
-```python
-# In dm's signup flow, after receiving the TOTP provisioning URI:
-secret = parse_totp_uri(provisioning_uri)  # extract base32 secret
-store_totp_secret("delivery-machine", secret)
-
-# Later, when dm needs to verify:
-code = get_totp_code("delivery-machine")
-response = api.post("/auth/totp/verify", json={"code": code})
-```
-
 ### Pros and cons
 
 - **Pro**: Zero dependencies — just needs `poppie` on `$PATH`
 - **Pro**: Works immediately, no Python gRPC setup
 - **Con**: Subprocess overhead (~5ms vs ~0.1ms for gRPC)
-- **Verdict**: Good enough for `dm`'s use case (human-speed operations)
+- **Verdict**: Good enough for human-speed operations
 
-## Option B: gRPC client (Python)
+## Option C: Go SDK
 
-For tighter integration or high-frequency calls.
-
-### Setup
+For Go services and CLI tools.
 
 ```bash
-pip install grpcio grpcio-tools
-
-# Generate Python stubs from poppie's proto:
-python -m grpc_tools.protoc \
-    -I/path/to/poppie/proto \
-    --python_out=./dm/generated \
-    --grpc_python_out=./dm/generated \
-    poppie/poppie.proto
+go get github.com/BarkingIguana/poppie/sdk/go
 ```
 
-### Python example
+```go
+client, err := poppie.New(ctx)
+if err != nil {
+    log.Fatal(err)
+}
+defer client.Close()
 
-```python
-import grpc
-from dm.generated.poppie import poppie_pb2, poppie_pb2_grpc
-
-
-def get_poppie_client() -> poppie_pb2_grpc.PoppieServiceStub:
-    """Connect to the poppie gRPC server via Unix socket."""
-    channel = grpc.insecure_channel("unix:///Users/you/.config/poppie/poppie.sock")
-    return poppie_pb2_grpc.PoppieServiceStub(channel)
-
-
-def store_totp_secret(label: str, secret: str) -> str:
-    """Store a TOTP secret and return the verification code."""
-    client = get_poppie_client()
-    response = client.StoreSecret(poppie_pb2.StoreSecretRequest(
-        label=label,
-        secret=secret,
-    ))
-    return response.verification_code
-
-
-def get_totp_code(label: str) -> str:
-    """Get a current TOTP code."""
-    client = get_poppie_client()
-    response = client.GetCode(poppie_pb2.GetCodeRequest(label=label))
-    return response.code
+code, err := client.GetCode(ctx, "myapp.example.com")
+fmt.Println(code.Code)
 ```
 
-### Pros and cons
-
-- **Pro**: Sub-millisecond latency, type-safe API
-- **Con**: Requires `grpcio` dependency and generated stubs in dm
-- **Verdict**: Use this if dm starts making many TOTP calls or needs the speed
+See the [Go SDK docs]({% link sdk/go.md %}) for full API reference.
 
 ## Prerequisites
 
-Both options require a running poppie server:
+All options require a running poppie server:
 
 ```bash
 # Start the server (will prompt or use env var for passphrase):
@@ -135,29 +124,11 @@ poppie server start --daemon
 poppie server status
 ```
 
-## Option C: Python SDK (recommended)
-
-The official Python SDK wraps the gRPC API with a clean interface and version negotiation.
-
-```bash
-pip install poppie-sdk
-```
-
-```python
-from poppie import PoppieClient
-
-with PoppieClient() as client:
-    label, verification = client.store_secret("delivery-machine", secret)
-    code, valid_for = client.get_code("delivery-machine")
-```
-
-See the [Python SDK docs]({% link sdk/python.md %}) for full API reference.
-
 ## Recommended integration path
 
-1. Start with **Option C** (Python SDK) — clean API, version negotiation built in
-2. Fall back to **Option A** (subprocess) if you want zero Python dependencies
-3. Add a poppie availability check in `dm`'s startup
+1. Start with **Option A** (Python SDK) — clean API, version negotiation built in
+2. Fall back to **Option B** (subprocess) if you want zero Python dependencies
+3. Add a poppie availability check in your app's startup
 4. Fall back to manual code entry if poppie isn't running
 
 ## Error handling

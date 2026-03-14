@@ -76,7 +76,7 @@ make run               # Run poppie server locally
 - RFC 6238 TOTP engine (SHA1/SHA256/SHA512, configurable digits/period)
 - Encrypted vault storage (AES-256-GCM, argon2id KDF, atomic writes, auto-backup)
 - gRPC server with Unix socket binding
-- CLI commands: store, get, list, delete, server start/stop/status
+- CLI commands: store, get (with --live mode), list, delete, server start/stop/status
 - BDD feature specs (10 scenarios, 42 steps) covering all operations
 - Unit tests for TOTP engine (RFC 6238 vectors) and store
 - Go SDK (`sdk/go/`) — client library with version negotiation

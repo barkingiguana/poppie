@@ -12,15 +12,18 @@ A CLI-based TOTP manager with a fast gRPC server. Store TOTP secrets, validate c
 
 ## Why Poppie?
 
-Authenticator apps are great for humans, but terrible for automation. Poppie bridges the gap — it stores your TOTP secrets securely and serves codes programmatically to tools that need them (like [`dm`](https://github.com/BarkingIguana/delivery-machine)).
+Authenticator apps are great for humans, but terrible for automation. Poppie bridges the gap — it stores your TOTP secrets securely and serves codes programmatically to any tool that needs them.
 
 ```bash
 # Store a TOTP secret
-poppie store --label deliverymachine.net --secret JBSWY3DPEHPK3PXP
+poppie store --label github.com --secret JBSWY3DPEHPK3PXP
 
 # Get a fresh code
-poppie get --label deliverymachine.net
+poppie get --label github.com
 # => 483921 (valid for 18s)
+
+# Watch codes live
+poppie get --label github.com --label aws.com --live
 ```
 
 ## Features
@@ -49,16 +52,16 @@ poppie store --label github.com --secret YOUR_BASE32_SECRET
 poppie get --label github.com
 ```
 
-## Integration with `dm`
+## Integrate with your tools
 
-Poppie is designed to work with delivery-machine's `dm` command:
+Poppie is designed to be called by other tools — CLI apps, deploy scripts, CI pipelines:
 
-```bash
-# dm stores the TOTP secret during setup
-dm signup user@example.com  # → provisions TOTP → stores in poppie
+```python
+from poppie import PoppieClient
 
-# dm retrieves codes automatically
-dm users verify user@example.com  # → asks poppie for code → submits it
+with PoppieClient() as client:
+    code, valid_for = client.get_code("myapp.example.com")
+    print(f"{code} (valid for {valid_for}s)")
 ```
 
-See the [integration guide]({% link integration-dm.md %}) for examples, or use the [Python SDK]({% link sdk/python.md %}) directly.
+See the [integration guide]({% link integration-dm.md %}) for more options, or jump straight to the [Go SDK]({% link sdk/go.md %}) or [Python SDK]({% link sdk/python.md %}).
