@@ -1,0 +1,37 @@
+# Poppie is a local-first CLI tool — no cloud deployment needed initially.
+# This workflow is reserved for future use if we add:
+# - A hosted TOTP relay service (AWS Lambda)
+# - A Homebrew tap update automation
+# - Binary distribution to a CDN
+#
+# Keeping the file as a placeholder so CI structure is consistent with the template.
+
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        default: "staging"
+        type: choice
+        options:
+          - staging
+          - production
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: eu-west-1
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Placeholder
+        run: echo "No deployment configured yet. See docs/adr/ for architecture decisions."

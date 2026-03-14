@@ -1,0 +1,20 @@
+# Override global gitignore — we want CLAUDE.md tracked in this project
+!CLAUDE.md
+
+# Build artifacts
+bin/
+coverage.out
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Poppie runtime (never commit secrets)
+*.enc
+*.sock
