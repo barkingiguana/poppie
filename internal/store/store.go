@@ -188,7 +188,7 @@ func (s *Store) persist() error {
 		return fmt.Errorf("failed to write temp vault: %w", err)
 	}
 	if err := os.Rename(tmp, s.path); err != nil {
-		os.Remove(tmp)
+		_ = os.Remove(tmp)
 		return fmt.Errorf("failed to rename temp vault: %w", err)
 	}
 

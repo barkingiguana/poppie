@@ -48,8 +48,8 @@ proto: ## Regenerate protobuf/gRPC code
 # ─── Testing ──────────────────────────────────────────────────────────────────
 
 .PHONY: test
-test: ## Run Go unit tests
-	go test -race -count=1 ./...
+test: ## Run Go unit tests (excludes BDD)
+	go test -race -count=1 $(shell go list ./... | grep -v /features/)
 
 .PHONY: test-coverage
 test-coverage: ## Run tests with coverage report
@@ -59,7 +59,7 @@ test-coverage: ## Run tests with coverage report
 
 .PHONY: bdd
 bdd: ## Run BDD/Cucumber feature specs
-	godog run features/
+	go test -race -count=1 -v ./features/steps/
 
 # ─── Development ──────────────────────────────────────────────────────────────
 

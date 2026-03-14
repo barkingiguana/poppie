@@ -116,7 +116,7 @@ func runServerStatus(_ *cobra.Command, _ []string) error {
 		fmt.Println("Server socket exists but cannot connect.")
 		return nil
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
@@ -131,7 +131,7 @@ func runServerStatus(_ *cobra.Command, _ []string) error {
 			fmt.Println("Server socket exists but is not responding (stale?).")
 			return nil
 		}
-		rawConn.Close()
+		_ = rawConn.Close()
 		fmt.Printf("Server is running at %s.\n", socketPath)
 		return nil
 	}
